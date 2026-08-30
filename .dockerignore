@@ -1,0 +1,10 @@
+# Documentation and other files
+docs/
+
+# Virtual environment files
+.venv/
+venv/
+
+# Python bytecode and related files
+__pycache__/
+*.pyc
