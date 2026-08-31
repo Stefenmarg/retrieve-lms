@@ -1,4 +1,4 @@
-from src.modules.configs import settings
+from backend.modules.config import settings
 from fastapi import FastAPI
 
 app = FastAPI()

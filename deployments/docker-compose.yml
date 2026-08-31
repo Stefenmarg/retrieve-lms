@@ -1,0 +1,12 @@
+services:
+  retrieve-lms-backend:
+    build:
+      context: ..
+      dockerfile: deployments/Dockerfile.backend
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - 8080:8000
