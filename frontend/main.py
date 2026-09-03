@@ -1,7 +1,7 @@
 from functools import partial
 
 from modules.config import settings
-from nicegui import ui
+from nicegui import app, ui
 from pages.home import main_page
 
 
@@ -50,4 +50,11 @@ def root():
                 ui.link("NiceGUI", "https://nicegui.io/")
 
 
-ui.run(root, host="0.0.0.0", port=8001)
+app.add_static_files("/static", "static")
+
+ui.run(
+    root,
+    host="0.0.0.0",
+    port=8001,
+    favicon=f"{settings.app_address}/static/favicons/favicon-16x16.png",
+)
