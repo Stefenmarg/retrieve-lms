@@ -1,5 +1,5 @@
-from backend.modules.config import settings
-from backend.modules.database import engine, SessionLocal
+from modules.config import settings
+from modules.database import engine, SessionLocal
 from fastapi import FastAPI
 
 app = FastAPI()
