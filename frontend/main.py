@@ -3,6 +3,7 @@ from functools import partial
 from modules.config import settings
 from nicegui import app, ui
 from pages.home import main_page
+from pages.auth import auth_page
 
 
 def root():
@@ -34,6 +35,7 @@ def root():
     ui.sub_pages(
         {
             "/": partial(main_page, drawer_slot, main_slot),
+            "/auth": partial(auth_page, drawer_slot, main_slot),
         },
         show_404=False,
     )

@@ -1,8 +1,13 @@
-from modules.config import settings
-from modules.database import engine, SessionLocal
+from core.config import settings
+from core.database import Base, SessionLocal, engine
 from fastapi import FastAPI
+from router.loader import router
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+app.include_router(router)
+
 
 @app.get("/health")
 def read_root():
