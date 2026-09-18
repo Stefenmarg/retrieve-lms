@@ -2,8 +2,8 @@ from functools import partial
 
 from modules.config import settings
 from nicegui import app, ui
+from pages.auth.auth import auth_page
 from pages.home import main_page
-from pages.auth import auth_page
 
 
 def root():
@@ -13,20 +13,30 @@ def root():
         .style("background-color: #2E2F2F")
     ):
         ui.label(f"{settings.app_name}")
-        ui.button(on_click=lambda: left_drawer.toggle(), icon="menu").props(
-            "flat color=#2E2F2F"
-        )
+        ui.button(on_click=lambda: left_drawer.toggle(), icon="menu")
 
-    with ui.left_drawer(fixed=False, top_corner=True, bottom_corner=True).style(
-        "background-color: #E5E5E5"
+    with ui.left_drawer(
+        fixed=False, top_corner=True, bottom_corner=True
     ) as left_drawer:
         ui.label("Navigation menu")
         ui.separator()
-        # Static navigation menu
+
+        # Navigation menu set by the root page
         ui.link("Home", "/")
 
         # Dynamic navigation menu set by the child page
         drawer_slot = ui.column()
+
+        # The continuation of navigation menu set by the root page
+        ui.separator()
+        ui.label("Important links")
+
+        ui.link("GitLab Repo", "https://gitlab.com/stefenmarg/retrieve-lms")
+        ui.link("GitHub Mirror", "https://github.com/Stefenmarg/retrieve-lms")
+        ui.link("NiceGUI", "https://nicegui.io/")
+        ui.link(
+            "Material Icons", "https://fonts.google.com/icons?icon.set=Material+Icons"
+        )
 
     # Slot where content is set by child page
     main_slot = ui.column()
@@ -42,14 +52,9 @@ def root():
 
     with ui.footer().style("background-color: #2E2F2F"):
         with ui.row().classes("w-full justify-center gap-20"):
-            with ui.column():
-                ui.label("Information").classes("text-xl font-medium")
-                ui.separator()
-                ui.link("Codeberg Repo", "https://codeberg.org/stefenmarg/retrieve-lms")
-            with ui.column():
-                ui.label("Documentation").classes("text-xl font-medium")
-                ui.separator()
-                ui.link("NiceGUI", "https://nicegui.io/")
+            ui.label("This platform is still in the Alpha phase.").classes(
+                "text-xl font-large"
+            )
 
 
 app.add_static_files("/static", "static")
@@ -58,5 +63,6 @@ ui.run(
     root,
     host="0.0.0.0",
     port=8001,
-    favicon=f"{settings.app_address}/static/favicons/favicon-16x16.png",
+    favicon=f"{settings.app_address}/static/favicons/favicon-32x32.png",
+    reload=True,
 )
