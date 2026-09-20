@@ -3,6 +3,7 @@ from functools import partial
 from modules.config import settings
 from nicegui import app, ui
 from pages.auth.auth import auth_page
+from pages.dashboard import dashboard_page
 from pages.home import main_page
 
 
@@ -46,8 +47,9 @@ def root():
         {
             "/": partial(main_page, drawer_slot, main_slot),
             "/auth": partial(auth_page, drawer_slot, main_slot),
+            "/dashboard": partial(dashboard_page, drawer_slot, main_slot),
         },
-        show_404=False,
+        show_404=True,
     )
 
     with ui.footer().style("background-color: #2E2F2F"):
@@ -63,6 +65,7 @@ ui.run(
     root,
     host="0.0.0.0",
     port=8001,
-    favicon=f"{settings.app_address}/static/favicons/favicon-32x32.png",
-    reload=True,
+    storage_secret=settings.storage_secret,
+    favicon="./static/favicons/favicon-32x32.png",
+    reload=settings.app_debug,
 )

@@ -18,6 +18,8 @@ services:
           initial_sync: true
         - action: rebuild
           path: backend/requirements.txt
+        - action: rebuild
+          path: .env
 
   retrieve-lms-frontend:
     build:
@@ -38,6 +40,8 @@ services:
           initial_sync: true
         - action: rebuild
           path: fronend/requirements.txt
+        - action: rebuild
+          path: .env
 
   nginx:
     image: nginx:alpine

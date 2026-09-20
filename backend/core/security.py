@@ -1,3 +1,4 @@
+from datetime import timezone
 from typing import Optional
 
 from core.database import SessionLocal
@@ -17,19 +18,26 @@ def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(security),
 ) -> User | None:
 
+    # Means user has not logged in / has empty cookies
     if credentials is None:
         return None
 
+    # Get the token and the values it contains
     token = credentials.credentials
     payload = validate_token(token, token_type="access")
 
+    # No / Invalid token thus user is not logged
     if payload is None:
         return None
 
-    # Fetch user from database
+    # Fetch user from database to check if account is active
     db = SessionLocal()
     try:
-        user = db.query(User).filter(User.id == int(payload["sub"])).first()
+        user = db.query(User).filter(User.id == int(payload["user_id"])).first()
+
+        if user is None:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
         return user
     finally:
         db.close()
@@ -59,12 +67,12 @@ def require_role(required_role: str):
             )
 
         # Wildcard so any authenticated user is allowed
-        # access to that endpoint
+        # to access that endpoint
         if required_role.lower() == "*":
             return user
 
         # Check if it is the role needed
-        # if not: let them know with little detail
+        # if not: let them know with a message
         if user.role.lower() != required_role.lower():
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

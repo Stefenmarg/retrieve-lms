@@ -1,24 +1,46 @@
-from modules.validity_rules import email_validation_rules, password_validation_rules
+import modules.api as api
+from modules.form_rules import email_validation_rules
 from nicegui import ui
 
 
 def login_page(slot, redirected, redirected_to):
     def try_login():
-        fields_valid = [password.validate(), email.validate()]
+        # Validate form content
+        fields_valid = [email.validate()]
         if not all(fields_valid):
+            return
+
+        # Send login request
+        response = api.login(
+            email.value,
+            password.value,
+        )
+
+        # If login fails, notify the user why it failed using the feedback
+        # the backend sent. If not feedback revert to a generic failure message
+        if response.status_code != 200:
+            try:
+                detail = response.json().get("detail", "Login failed")
+            except ValueError:
+                detail = f"Registration failed ({response.status_code})"
+
+            ui.notify(detail, color="negative")
             return
 
         ui.notify("Logged in successfully")
 
+        # Navigate to the page the user originally wanted to access
         if redirected:
             ui.navigate.to(redirected_to)
             return
 
+        # Else navigate to the dashboard
         ui.navigate.to("/dashboard")
 
     with slot:
         ui.label("Login to your account")
 
+        # The login form
         with ui.column().classes("w-full"):
             email = (
                 ui.input(placeholder="Your email", validation=email_validation_rules)
@@ -32,9 +54,8 @@ def login_page(slot, redirected, redirected_to):
                     placeholder="Enter password",
                     password=True,
                     password_toggle_button=True,
-                    validation=password_validation_rules,
                 )
-                .on("keydown.enter", lambda: try_login)
+                .on("keydown.enter", try_login)
                 .classes("w-full")
             )
 
