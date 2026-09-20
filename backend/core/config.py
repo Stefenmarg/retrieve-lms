@@ -5,6 +5,9 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    # Debug handles print statements in the code
+    app_debug: bool = False
+
     jwt_secret: str = ""
 
     @field_validator("jwt_secret")
@@ -18,7 +21,7 @@ class Settings(BaseSettings):
         return value
 
     jwt_access_token_expiration_minutes: int = 15
-    jwt_secret_token_expiration_minutes: int = 60
+    jwt_refresh_token_expiration_minutes: int = 60
 
     db_user: str = "retrieve"
     db_password: str

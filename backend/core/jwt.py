@@ -8,7 +8,7 @@ from schemas.models import User
 
 
 def generate_token(
-    user_id: int, username: str, role: str, token_type: str = "access"
+    user_id: int, full_name: str, role: str, token_type: str = "access"
 ) -> str:
     token_type = token_type.lower()
     # Set token expiration time based on the token type
@@ -26,7 +26,8 @@ def generate_token(
         "jti": str(uuid.uuid4()),
         "type": token_type,
         # Custom properties
-        "username": username,
+        "user_id": user_id,
+        "full_name": full_name,
         "role": role,
     }
     # return the new tokens
@@ -51,12 +52,6 @@ def validate_token(token: str, token_type: str | None = None) -> dict | None:
                 # User no longer exists, returns none
                 return None
 
-            if user_record.last_logout:
-                last_logout_ts = user_record.last_logout.replace(
-                    tzinfo=timezone.utc
-                ).timestamp()
-                if token_payload["iat"] < last_logout_ts:
-                    return None
         finally:
             db.close()
         return token_payload
@@ -74,8 +69,8 @@ def refresh_access_token(refresh_token: str) -> str | None:
         return None
     # Else generate new access token and return it
     return generate_token(
-        user_id=int(payload["sub"]),
-        username=payload["username"],
+        user_id=int(payload["user_id"]),
+        full_name=payload["full_name"],
         role=payload["role"],
         token_type="access",
     )

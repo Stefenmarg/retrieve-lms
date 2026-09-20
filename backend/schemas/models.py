@@ -42,10 +42,6 @@ class User(Base, TimestampMixin):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     needs_password_change: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    last_logout: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
-    )
-
     role: Mapped[str] = mapped_column(
         Text,
         nullable=False,
