@@ -9,7 +9,7 @@ app = FastAPI()
 app.include_router(router)
 
 
-@app.get("/health")
+@app.get("/api/health")
 def read_root():
     with engine.connect() as conn:
         conn.exec_driver_sql("SELECT 1")
