@@ -20,11 +20,9 @@ def main_page(drawer_slot, main_slot):
     with main_slot:
         ui.label("Welcome home")
 
-        with ui.element("div").classes(
-            "fixed inset-0 flex items-center justify-center z-50"
-        ):
-            with ui.column().classes("items-center"):
-                ui.label("Above the carousel").classes("text-white text-xl mb-2")
+        with ui.element("div").classes("flex items-center justify-center"):
+            with ui.column().classes("w-full items-center justify-center gap-2"):
+                ui.label("Above the carousel").classes("text-xl mb-2")
 
                 with ui.carousel(animated=True, arrows=True, navigation=True).props(
                     "height=400px"
@@ -35,7 +33,19 @@ def main_page(drawer_slot, main_slot):
                                 f"w-[{image['width']}px]"
                             )
 
-                ui.label("Below the carousel").classes("text-white text-xl mt-2")
+                ui.label("Between the carousel").classes("text-xl mt-2")
+
+                with ui.carousel(animated=True, arrows=True, navigation=True).props(
+                    "height=400px"
+                ) as carousel:
+                    for image in carousel_images:
+                        with ui.carousel_slide().classes("p-0"):
+                            ui.image(f"{image['url']}").classes(
+                                f"w-[{image['width']}px]"
+                            )
+
+                ui.label("Below the carousel").classes("text-xl mt-2")
+
                 ui.button(
                     "Go to the dashboard", on_click=lambda: ui.navigate.to("/dashboard")
                 )

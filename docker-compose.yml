@@ -16,6 +16,11 @@ services:
           path: ./backend
           target: /app/
           initial_sync: true
+          ignore:
+            - .venv/
+            - __pycache__/
+            - "*.pyc"
+            - .pytest_cache/
         - action: rebuild
           path: backend/requirements.txt
         - action: rebuild
@@ -37,6 +42,11 @@ services:
         - action: sync
           path: ./frontend
           target: /app/
+          ignore:
+            - .venv/
+            - __pycache__/
+            - "*.pyc"
+            - .pytest_cache/
           initial_sync: true
         - action: rebuild
           path: fronend/requirements.txt

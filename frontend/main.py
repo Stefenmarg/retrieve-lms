@@ -40,7 +40,9 @@ def root():
         )
 
     # Slot where content is set by child page
-    main_slot = ui.column()
+    main_slot = ui.column().classes(
+        "w-full min-h-screen items-center justify-center gap-2"
+    )
 
     # URL Based routing for page access
     ui.sub_pages(

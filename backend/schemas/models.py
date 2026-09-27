@@ -4,26 +4,31 @@ from datetime import datetime
 from core.database import Base
 from sqlalchemy import (
     Boolean,
-    CheckConstraint,
     DateTime,
     ForeignKey,
     Index,
     String,
-    Text,
     UniqueConstraint,
+    func,
+)
+from sqlalchemy import (
+    Enum as SAEnum,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
 class CreatedAtMixin:
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
+        DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
 
 class TimestampMixin(CreatedAtMixin):
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
 
@@ -45,42 +50,84 @@ class User(Base, TimestampMixin):
     needs_password_change: Mapped[bool] = mapped_column(Boolean, default=False)
 
     role: Mapped[str] = mapped_column(
-        Text,
+        SAEnum(
+            UserRole,
+            name="user_role",
+            native_enum=False,
+            length=16,
+            values_callable=lambda enum_cls: [e.value for e in enum_cls],
+        ),
         nullable=False,
-        default="student",
+        default=UserRole.STUDENT.value,
     )
 
-    __table_args__ = (
-        Index("ix_users_active_role", "is_active", "role"),
-        CheckConstraint(
-            f"role IN ({','.join(repr(r.value) for r in UserRole)})",
-            name="ck_users_role_valid",
-        ),
+    courses_owned = relationship(
+        "Course",
+        back_populates="owner",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
+    courses_joined = relationship(
+        "Course",
+        secondary="members",
+        back_populates="members",
+    )
+
+    __table_args__ = (Index("ix_users_active_role", "is_active", "role"),)
+
+
+class CourseEntryType(str, enum.Enum):
+    CLOSED = "closed"
+    REQUEST = "request"
+    OPEN = "open"
 
 
 class Course(Base, TimestampMixin):
     __tablename__ = "courses"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(255), unique=True)
+    name: Mapped[str] = mapped_column(String(255))
 
-    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    owner: Mapped["User"] = relationship(back_populates="owned_courses")
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
+    owner = relationship(
+        "User",
+        back_populates="courses_owned",
+        passive_deletes=True,
+    )
+
+    restriction_status: Mapped[str] = mapped_column(
+        SAEnum(
+            CourseEntryType,
+            name="course_entry_type",
+            native_enum=False,
+            length=16,
+            values_callable=lambda enum_cls: [e.value for e in enum_cls],
+        ),
+        nullable=False,
+        default=CourseEntryType.OPEN.value,
+    )
 
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    __table_args__ = (Index("ix_courses_active_id", "is_active", "id"),)
-
-
-class Members(Base, CreatedAtMixin):
-    __tablename__ = "members"
-    id: Mapped[int] = mapped_column(primary_key=True)
-
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    course_id: Mapped[int] = mapped_column(ForeignKey("courses.id"))
+    members = relationship(
+        "User",
+        secondary="members",
+        back_populates="courses_joined",
+    )
 
     __table_args__ = (
-        Index("ix_members_user_id_course_id", "user_id", "course_id"),
-        UniqueConstraint("user_id", "course_id", name="uix_members_user_id_course_id"),
+        Index("ix_courses_active_id", "is_active", "id"),
+        UniqueConstraint("owner_id", "name", name="uq_course_owner_name"),
+    )
+
+
+class Member(Base, CreatedAtMixin):
+    __tablename__ = "members"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    course_id: Mapped[int] = mapped_column(ForeignKey("courses.id", ondelete="CASCADE"))
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "course_id", name="uq_members_user_course"),
     )

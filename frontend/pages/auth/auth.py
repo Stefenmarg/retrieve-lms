@@ -16,11 +16,9 @@ def auth_page(
 
     main_slot.clear()
     with main_slot:
-        with ui.element("div").classes(
-            "fixed inset-0 flex items-center justify-center bg-black/20 z-50"
-        ):
+        with ui.element("div"):
             # The actual modal box
-            with ui.card().classes("w-96 items-center p-6"):
+            with ui.card().classes("w-96 items-center p-6 my-8"):
                 # Notice that the page they were trying to access needs authentication
                 # (used if sent by the @needs_authentication decorator)
                 if redirected:

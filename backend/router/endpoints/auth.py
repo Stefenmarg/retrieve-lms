@@ -30,6 +30,7 @@ def _set_refresh_token_cookie(response, refresh_token):
 
 @router.post("/register", response_model=Feedback, status_code=201)
 def Register(payload: UserCreate, response: Response, db: Session = Depends(get_db)):
+    print(f"DEBUG: received role = {payload.role!r}")
     if db.query(User).filter(User.email == payload.email).first():
         raise HTTPException(400, "Email already registered")
 
@@ -49,9 +50,10 @@ def Register(payload: UserCreate, response: Response, db: Session = Depends(get_
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
-    except IntegrityError:
+    except IntegrityError as e:
         db.rollback()
-        raise HTTPException(400, "Email already registered")
+        print(f"Registration failed: {e.orig}")
+        raise HTTPException(400, "Registration failed")
 
     return Feedback(status="ok", message="Account created successfully")
 
