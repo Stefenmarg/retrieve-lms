@@ -87,6 +87,7 @@ class Course(Base, TimestampMixin):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255))
+    llm_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
 
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
     owner = relationship(

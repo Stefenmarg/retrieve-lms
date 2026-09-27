@@ -33,7 +33,10 @@ def register_page(slot, redirected, redirected_to):
 
         # Send registration request
         response = api.register(
-            full_name.value, email.value, password.value, role.value
+            full_name.value.strip(),
+            email.value.strip(),
+            password.value.strip(),
+            role.value,
         )
 
         # If account was not created, notify the user why it failed using the feedback

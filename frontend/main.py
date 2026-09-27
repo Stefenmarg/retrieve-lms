@@ -16,9 +16,7 @@ def root():
         ui.label(f"{settings.app_name}")
         ui.button(on_click=lambda: left_drawer.toggle(), icon="menu")
 
-    with ui.left_drawer(
-        fixed=False, top_corner=True, bottom_corner=True
-    ) as left_drawer:
+    with ui.left_drawer(fixed=True, top_corner=True, bottom_corner=True) as left_drawer:
         ui.label("Navigation menu")
         ui.separator()
 

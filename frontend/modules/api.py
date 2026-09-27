@@ -1,3 +1,7 @@
+import base64
+import json
+from typing import Dict
+
 import httpx
 from modules.config import settings
 from nicegui import app
@@ -94,6 +98,35 @@ def _refresh_access_token() -> bool:
 def _clear_session():
     app.storage.user.pop("access_token", None)
     app.storage.user.pop("refresh_token", None)
+
+
+# This function takes the part needed
+def get_token_payload(part: int = 1) -> dict:
+    # A JWT token has 3 parts
+    # Part 1 contains information like the algorithm used
+    # to generate the token and what type of token this is.
+    # Commonly is { "alg": "HS256", "typ": "JWT" }
+    # Part 2 contains the payload given from the server and
+    # contains the sub, iat as well as any other properties attached
+    # Part 3 contains the verification signature of the JWT token
+    token = app.storage.user.get("access_token")
+    token_parts = token.split(".")
+
+    if len(token_parts) != 3:
+        raise ValueError("Invalid token part count")
+
+    if len(token_parts) <= part:
+        raise ValueError("Access of invalid token part allowed parts are 0-2")
+
+    def decode_part(part):
+        padding = 4 - len(part) % 4
+        if padding != 4:
+            part += "=" * padding
+
+        decoded = base64.urlsafe_b64decode(part)
+        return json.loads(decoded)
+
+    return decode_part(token_parts[part])
 
 
 def register(full_name: str, email: str, password: str, role: str):

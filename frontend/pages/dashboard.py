@@ -1,5 +1,6 @@
 from functools import partial
 
+from modules.api import get_token_payload
 from modules.config import settings
 from modules.security import needs_authentication
 from nicegui import ui
@@ -15,7 +16,7 @@ def dashboard_page(drawer_slot, main_slot):
 
     main_slot.clear()
     with main_slot:
-        ui.label("Dashboard protected view")
+        ui.label(f"Welcome, {get_token_payload()['full_name']}!")
 
         columns = [
             {
@@ -32,4 +33,12 @@ def dashboard_page(drawer_slot, main_slot):
             {"name": "Bob", "age": 21},
             {"name": "Carol"},
         ]
-        ui.table(columns=columns, rows=rows, row_key="name")
+
+        with ui.row(wrap=True):
+            with ui.column():
+                ui.label("Joined Courses")
+                ui.table(columns=columns, rows=rows, row_key="name")
+            ui.space()
+            with ui.column():
+                ui.label("Notifications")
+                ui.table(columns=columns, rows=rows, row_key="name")

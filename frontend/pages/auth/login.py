@@ -12,8 +12,8 @@ def login_page(slot, redirected, redirected_to):
 
         # Send login request
         response = api.login(
-            email.value,
-            password.value,
+            email.value.strip(),
+            password.value.strip(),
         )
 
         # If login fails, notify the user why it failed using the feedback
