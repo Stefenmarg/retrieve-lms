@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 import jwt
 from core.config import settings
 from core.database import SessionLocal
-from schemas.models import User
+from models.database import User
 
 
 def generate_token(

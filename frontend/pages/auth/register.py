@@ -1,5 +1,5 @@
-import modules.api as api
 from modules.config import settings
+from modules.endpoints.auth import login, register
 from modules.form_rules import (
     email_validation_rules,
     full_name_validation_rules,
@@ -32,7 +32,7 @@ def register_page(slot, redirected, redirected_to):
             return
 
         # Send registration request
-        response = api.register(
+        response = register(
             full_name.value.strip(),
             email.value.strip(),
             password.value.strip(),
@@ -53,7 +53,7 @@ def register_page(slot, redirected, redirected_to):
         ui.notify("Registered successfully")
 
         # Now that the account was created, send login request
-        response = api.login(
+        response = login(
             email.value,
             password.value,
         )

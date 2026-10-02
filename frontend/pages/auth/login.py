@@ -1,4 +1,4 @@
-import modules.api as api
+from modules.endpoints.auth import login
 from modules.form_rules import email_validation_rules
 from nicegui import ui
 
@@ -11,7 +11,7 @@ def login_page(slot, redirected, redirected_to):
             return
 
         # Send login request
-        response = api.login(
+        response = login(
             email.value.strip(),
             password.value.strip(),
         )

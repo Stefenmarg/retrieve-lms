@@ -9,7 +9,7 @@ from nicegui import app
 BASE_URL = settings.app_address
 TIMEOUT = settings.timeout_time_httpx_seconds
 
-# All API requests to the backend are done from here where we
+# All API schemas to the backend are done from here where we
 # make a new httpx.Client per call and per user. I tried using
 # one module-level client but since NiceGUI is a multiuser server
 # process it allowed sharing a client's cookie jar to be shared state
@@ -55,10 +55,10 @@ def _store_refresh_token(response: httpx.Response):
         app.storage.user["refresh_token"] = new_refresh_token
 
 
-# This function makes requests to the backend and if it gets "401 Unauthorized"
+# This function makes schemas to the backend and if it gets "401 Unauthorized"
 # it tries to refresh the token and retries the request and if it still
 # fail with "401 Unauthorized" it clears the storage
-def _make_api_call(method: str, endpoint: str, json: dict | None = None):
+def make_api_call(method: str, endpoint: str, json: dict | None = None):
     response = _request(method, endpoint, json)
 
     if response.status_code == 401:
@@ -67,7 +67,7 @@ def _make_api_call(method: str, endpoint: str, json: dict | None = None):
             response = _request(method, endpoint, json)
         else:
             # refresh failed thus user must log in again
-            _clear_session()
+            clear_session()
 
     return response
 
@@ -95,7 +95,7 @@ def _refresh_access_token() -> bool:
     return True
 
 
-def _clear_session():
+def clear_session():
     app.storage.user.pop("access_token", None)
     app.storage.user.pop("refresh_token", None)
 
@@ -127,43 +127,3 @@ def get_token_payload(part: int = 1) -> dict:
         return json.loads(decoded)
 
     return decode_part(token_parts[part])
-
-
-def register(full_name: str, email: str, password: str, role: str):
-    return _make_api_call(
-        "POST",
-        "/auth/register",
-        {
-            "full_name": full_name,
-            "email": email,
-            "password": password,
-            "role": role,
-        },
-    )
-
-
-def login(email: str, password: str):
-    response = _make_api_call(
-        "POST",
-        "/auth/login",
-        {
-            "email": email,
-            "password": password,
-        },
-    )
-
-    if response.status_code == 200:
-        app.storage.user["access_token"] = response.json()["token"]
-
-    return response
-
-
-def logout():
-    # server-side: revokes tokens + clear cookie in the jar
-    response = _make_api_call("POST", "/auth/logout")
-    _clear_session()
-    return response
-
-
-def get_status():
-    return _make_api_call("GET", "/auth/status")

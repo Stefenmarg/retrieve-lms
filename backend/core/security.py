@@ -5,11 +5,11 @@ from core.database import SessionLocal
 from core.jwt import validate_token
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from models.database import User
 from passlib.context import CryptContext
-from schemas.models import User
 
 # We are putting auto error false in order to not automatically
-# return Unaithorised on every request sent. Public endpoints need
+# return Unauthorised on every request sent. Public endpoints need
 # to be accessible without a bearer
 security = HTTPBearer(auto_error=False)
 
@@ -33,10 +33,13 @@ def get_current_user(
     # Fetch user from database to check if account is active
     db = SessionLocal()
     try:
-        user = db.query(User).filter(User.id == int(payload["user_id"])).first()
+        user = db.get(User, int(payload["user_id"]))
 
         if user is None:
             raise HTTPException(status_code=401, detail="Not authenticated")
+
+        if not user.is_active:
+            raise HTTPException(status_code=403, detail="Account disabled")
 
         return user
     finally:
@@ -48,15 +51,6 @@ def require_role(required_role: str):
         user: User | None = Depends(get_current_user),
         credentials: HTTPAuthorizationCredentials | None = Depends(security),
     ) -> User:
-        # Check if token was provided at all
-        # if not: they should login
-        if credentials is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Authentication required",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-
         # Check if user exists and token is valid
         # if not: they should refresh the token
         if user is None:
@@ -76,7 +70,7 @@ def require_role(required_role: str):
         if user.role.lower() != required_role.lower():
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Insufficient role permissions",
+                detail="Insufficient role permissions",
             )
 
         return user

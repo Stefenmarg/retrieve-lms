@@ -1,5 +1,6 @@
 import enum
 from datetime import datetime
+from typing import Text
 
 from core.database import Base
 from sqlalchemy import (
@@ -86,7 +87,9 @@ class Course(Base, TimestampMixin):
     __tablename__ = "courses"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    description: Mapped[str] = mapped_column(String(255))
     name: Mapped[str] = mapped_column(String(255))
+
     llm_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
 
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
@@ -122,6 +125,12 @@ class Course(Base, TimestampMixin):
     )
 
 
+class MemberRole(str, enum.Enum):
+    TEACHER = "teacher"
+    SUBSTITUTE = "substitute"
+    STUDENT = "student"
+
+
 class Member(Base, CreatedAtMixin):
     __tablename__ = "members"
 
@@ -129,6 +138,33 @@ class Member(Base, CreatedAtMixin):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     course_id: Mapped[int] = mapped_column(ForeignKey("courses.id", ondelete="CASCADE"))
 
+    user_role: Mapped[str] = mapped_column(
+        SAEnum(
+            MemberRole,
+            name="member_role",
+            native_enum=False,
+            length=20,
+            values_callable=lambda enum_cls: [e.value for e in enum_cls],
+        ),
+        nullable=False,
+        default=MemberRole.STUDENT.value,
+    )
+
     __table_args__ = (
         UniqueConstraint("user_id", "course_id", name="uq_members_user_course"),
+        UniqueConstraint("user_id", "user_role", name="uq_members_user_role"),
+        Index("ix_members_user_id_role_course_id", "user_id", "user_role", "course_id"),
+    )
+
+
+class MemberRequests(Base, CreatedAtMixin):
+    __tablename__ = "member_requests"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    course_id: Mapped[int] = mapped_column(ForeignKey("courses.id", ondelete="CASCADE"))
+    message: Mapped[str] = mapped_column(String(255))
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "course_id", name="uq_member_requests_user_course"),
+        Index("ix_members_requests_user_id_course_id", "user_id", "course_id"),
     )

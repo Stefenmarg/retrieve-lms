@@ -1,7 +1,7 @@
 import functools
 from urllib.parse import quote
 
-from modules.api import get_status
+from modules.endpoints.auth import get_status
 from nicegui import ui
 
 

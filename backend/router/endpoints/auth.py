@@ -1,12 +1,10 @@
-from datetime import datetime, timezone
-
 from core.config import settings
 from core.database import get_db
 from core.jwt import generate_token, refresh_access_token, validate_token
 from core.security import get_current_user, hash_password, verify_password
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from requests.models import Feedback, TokenOut, UserCreate, UserLogin
-from schemas.models import User, UserRole
+from schemas.api import Feedback, TokenOut, UserCreate, UserLogin
+from models.database import User, UserRole
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 

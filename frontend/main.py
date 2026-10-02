@@ -3,7 +3,7 @@ from functools import partial
 from modules.config import settings
 from nicegui import app, ui
 from pages.auth.auth import auth_page
-from pages.dashboard import dashboard_page
+from pages.dashboard.dashboard import dashboard_page
 from pages.home import main_page
 
 

@@ -1,6 +1,3 @@
-from functools import partial
-
-from modules.config import settings
 from nicegui import ui
 from pages.auth.login import login_page
 from pages.auth.register import register_page
